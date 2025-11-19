@@ -1,0 +1,11 @@
+type: Workflow
+version: 1.0.0
+main:
+    id: 7573878430614568996
+    name: backerkit_competitor_final
+    desc: 做出一个智能工具，向coze智能体发送一个url，这个url是需要人工现在一个网站搜索一个特定产品，然后会出来一个搜索的目录页，然后把这个目录页的url给模型，让模型进行全部的竞品分析。
+    icon: plugin_icon/workflow.png
+    version: ""
+    flowMode: 0
+    commitId: ""
+sub: []

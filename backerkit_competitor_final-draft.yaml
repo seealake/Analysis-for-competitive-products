@@ -1,0 +1,526 @@
+schema_version: 1.0.0
+name: backerkit_competitor_final
+id: 7573878430614568996
+description: "做出一个智能工具，向coze智能体发送一个url，这个url是需要人工现在一个网站搜索一个特定产品，然后会出来一个搜索的目录页，然后把这个目录页的url给模型，让模型进行全部的竞品分析。"
+mode: workflow
+icon: plugin_icon/workflow.png
+nodes:
+    - id: "100001"
+      type: start
+      title: 开始
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg
+      description: "工作流的起始节点，用于设定启动工作流需要的信息"
+      position:
+        x: 180
+        y: 26
+      parameters:
+        node_outputs:
+            search_url:
+                type: string
+                required: true
+                value: null
+                description: 搜索结果第一页 URL
+            total_pages:
+                type: integer
+                required: true
+                value: null
+                description: 总页数，比如 32
+    - id: "900001"
+      type: end
+      title: 结束
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg
+      description: "工作流的最终节点，用于返回工作流运行后的结果信息"
+      position:
+        x: 3219.5247105830435
+        y: 33.20072025839522
+      parameters:
+        node_inputs:
+            - name: output
+              input:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value:
+                    path: projects_flat
+                    ref_node: "187604"
+        terminatePlan: returnVariables
+    - id: "150070"
+      type: code
+      title: 得到所有页面的url
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Code-v2.jpg
+      description: "编写代码，处理输入变量来生成返回值"
+      version: v2
+      position:
+        x: 640
+        y: 13
+      parameters:
+        code: "// 在这里，您可以通过 'params'  获取节点中的输入变量，并通过 'ret' 输出结果\n// 'params' 已经被正确地注入到环境中\n// 下面是一个示例，获取节点输入中参数名为'input'的值：\n// const input = params.input; \n// 下面是一个示例，输出一个包含多种数据类型的 'ret' 对象：\n// const ret = { \"name\": '小明', \"hobbies\": [\"看书\", \"旅游\"] };\n\nfunction main({ params }) {\n    const baseUrl = params.search_url;\n    const totalPages = Number(params.total_pages);\n  \n    const urls = [];\n    for (let i = 1; i <= totalPages; i++) {\n      const u = new URL(baseUrl);\n      u.searchParams.set(\"page\", i);\n      urls.push(u.toString());\n    }\n  \n    return { page_urls: urls };\n  }\n  \n  \n  "
+        language: 5
+        node_inputs:
+            - name: search_url
+              input:
+                value:
+                    path: search_url
+                    ref_node: "100001"
+            - name: total_pages
+              input:
+                value:
+                    path: total_pages
+                    ref_node: "100001"
+        node_outputs:
+            page_urls:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            switch: false
+            timeoutMs: 60000
+    - id: "140379"
+      type: loop
+      title: 循环获取url的信息
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Loop-v2.jpg
+      description: "用于通过设定循环次数和逻辑，重复执行一系列任务"
+      position:
+        x: 1396.124694744335
+        y: -30.770009036252276
+      canvas_position:
+        x: 961.4554106231951
+        y: 315.2925920078826
+      parameters:
+        loopCount:
+            type: integer
+            value:
+                content:
+                    blockID: "100001"
+                    name: total_pages
+                    source: block-output
+                rawMeta:
+                    type: 2
+                type: ref
+        loopType: array
+        node_inputs:
+            - name: input
+              input:
+                value:
+                    path: page_urls
+                    ref_node: "150070"
+        node_outputs:
+            projects_json_list:
+                value:
+                    type: list
+                    items:
+                        type: string
+                        value: null
+                    value:
+                        path: project_json
+                        ref_node: "142442"
+        variableParameters: []
+      nodes:
+        - id: "136955"
+          type: plugin
+          title: getUrlContent
+          icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Plugin-v2.jpg
+          description: "获取指定url源内容"
+          position:
+            x: 180
+            y: 0
+          parameters:
+            apiParam:
+                - name: apiID
+                  input:
+                    type: string
+                    value: "7506493776572235811"
+                - name: apiName
+                  input:
+                    type: string
+                    value: "getUrlContent"
+                - name: pluginID
+                  input:
+                    type: string
+                    value: "7506493776572219427"
+                - name: pluginName
+                  input:
+                    type: string
+                    value: "全球网页爬虫插件"
+                - name: pluginVersion
+                  input:
+                    type: string
+                    value: ""
+                - name: tips
+                  input:
+                    type: string
+                    value: ""
+                - name: outDocLink
+                  input:
+                    type: string
+                    value: ""
+            node_inputs:
+                - name: url
+                  input:
+                    type: string
+                    value:
+                        path: input
+                        ref_node: "140379"
+            node_outputs:
+                data:
+                    type: string
+                    required: true
+                    value: null
+                    description: 网页源内容
+                msg:
+                    type: string
+                    required: true
+                    value: null
+                    description: 错误信息
+                success:
+                    type: boolean
+                    required: true
+                    value: null
+                    description: 是否成功
+            settingOnError:
+                processType: 1
+                retryTimes: 0
+                timeoutMs: 180000
+        - id: "142442"
+          type: code
+          title: 提取源代码的关键信息
+          icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Code-v2.jpg
+          description: "编写代码，处理输入变量来生成返回值"
+          version: v2
+          position:
+            x: 689.3385682422801
+            y: -12.983833747968447
+          parameters:
+            code: "async function main({ params }) {\n    try {\n      let html = params.input || '';\n      if (typeof html === 'string' && html.startsWith('\"') && html.endsWith('\"')) {\n        try {\n          html = JSON.parse(html);\n        } catch (e) {\n          html = html\n            .slice(1, -1)\n            .replace(/\\\\\"/g, '\"')\n            .replace(/\\\\n/g, '\\n');\n        }\n      }\n      const projects = [];\n      const chunks = String(html)\n        .split('<li class=\"project-result\">')\n        .slice(1); \n      for (const block of chunks) {\n        const p = {};\n        const platformMatch = block.match(\n          /<img class=\"cf-icon\"[^>]*title=\"([^\"]+)\"/\n        );\n        if (platformMatch) {\n          p.platform = platformMatch[1];\n        } else if (block.includes('BackerKit Crowdfunding')) {\n          p.platform = 'BackerKit Crowdfunding';\n        }\n        const catMatch = block.match(\n          /<div class=\"category[^>]*>[\\s\\S]*?<a[^>]*>([^<]+)<\\/a>/\n        );\n        if (catMatch) p.category = catMatch[1].trim();\n        const titleMatch = block.match(\n          /<div class=\"project-title\">[\\s\\S]*?<a[^>]*>([\\s\\S]*?)<\\/a>/\n        );\n        if (titleMatch) p.title = titleMatch[1].trim();\n        const blurbMatch = block.match(/<p class=\"blurb\">([\\s\\S]*?)<\\/p>/);\n        if (blurbMatch) {\n          p.blurb = blurbMatch[1].replace(/\\s+/g, ' ').trim();\n        }\n        const raisedMatch = block.match(\n          /class=\"pledged_amount\"[\\s\\S]*?<strong>([^<]+)<\\/strong>/\n        );\n        if (raisedMatch) p.raised_text = raisedMatch[1].trim();\n        const backerMatch = block.match(\n          /class=\"backer_count\"[\\s\\S]*?<strong>([^<]+)<\\/strong>/\n        );\n        if (backerMatch) {\n          const n = parseInt(backerMatch[1].replace(/[^\\d]/g, ''), 10);\n          if (!Number.isNaN(n)) p.backers = n;\n        }\n        const pctMatch = block.match(\n          /class=\"funding_percentage\"[\\s\\S]*?<strong>([^<]+)%<\\/strong>/\n        );\n        if (pctMatch) {\n          const n = parseInt(pctMatch[1], 10);\n          if (!Number.isNaN(n)) p.funding_percentage = n;\n        }\n        const daysMatch = block.match(\n          /class=\"ending-in\"[\\s\\S]*?<strong>([^<]+)<\\/strong>[\\s\\S]*?Days to go/\n        );\n        if (daysMatch) {\n          const n = parseInt(daysMatch[1], 10);\n          if (!Number.isNaN(n)) p.days_to_go = n;\n        }\n  \n        projects.push(p);\n      }\n      return {\n        project_json: JSON.stringify(projects),\n      };\n    } catch (err) {\n      return {\n        project_json: '[]',\n      };\n    }\n  }\n  \n  "
+            language: 5
+            node_inputs:
+                - name: input
+                  input:
+                    value:
+                        path: data
+                        ref_node: "136955"
+            node_outputs:
+                project_json:
+                    type: string
+                    value: null
+            settingOnError:
+                processType: 1
+                retryTimes: 0
+                switch: false
+                timeoutMs: 60000
+      edges:
+        - source_node: "140379"
+          target_node: "136955"
+          source_port: loop-function-inline-output
+        - source_node: "136955"
+          target_node: "142442"
+        - source_node: "142442"
+          target_node: "140379"
+          target_port: loop-function-inline-input
+    - id: "187604"
+      type: code
+      title: 降维array
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Code-v2.jpg
+      description: "编写代码，处理输入变量来生成返回值"
+      version: v2
+      position:
+        x: 2265.2074307889065
+        y: 56.13769422506971
+      parameters:
+        code: "async function main({ params }) {\n    const pages = params.input || [];\n    const flat = [];\n  \n    for (const pageStr of pages) {\n      if (!pageStr) continue;\n      try {\n        const pageArr = JSON.parse(pageStr);\n  \n        if (!Array.isArray(pageArr)) continue;\n        for (const item of pageArr) {\n          if (!item) continue;\n          if (typeof item === 'object') {\n            flat.push(item);\n            continue;\n          }\n          if (typeof item === 'string') {\n            try {\n              const obj = JSON.parse(item);\n              if (obj && typeof obj === 'object') {\n                flat.push(obj);\n              }\n            } catch (e) {\n            }\n          }\n        }\n      } catch (e) {\n        continue;\n      }\n    }\n    return {\n      projects_flat: flat\n    };\n  }\n  \n  "
+        language: 5
+        node_inputs:
+            - name: input
+              input:
+                type: list
+                items:
+                    type: string
+                    value: null
+                value:
+                    path: projects_json_list
+                    ref_node: "140379"
+        node_outputs:
+            projects_flat:
+                type: list
+                items:
+                    type: object
+                    value: null
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            timeoutMs: 60000
+    - id: "196180"
+      type: llm
+      title: 输出竞品信息
+      icon: https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg
+      description: "调用大语言模型,使用变量和提示词生成回复"
+      version: "3"
+      position:
+        x: 2677.7985932475635
+        y: 56.13769422506971
+      parameters:
+        fcParam:
+            pluginFCParam:
+                pluginList: []
+        fcParamVar:
+            knowledgeFCParam: {}
+        llmParam:
+            - name: generationDiversity
+              input:
+                type: string
+                value: default_val
+            - name: temperature
+              input:
+                type: float
+                value: "0.8"
+            - name: topP
+              input:
+                type: float
+                value: "1"
+            - name: frequencyPenalty
+              input:
+                type: float
+                value: "0"
+            - name: maxTokens
+              input:
+                type: integer
+                value: "32768"
+            - name: spCurrentTime
+              input:
+                type: boolean
+                value: false
+            - name: spAntiLeak
+              input:
+                type: boolean
+                value: false
+            - name: thinkingType
+              input:
+                type: string
+                value: enabled
+            - name: maxCompletionTokens
+              input:
+                type: integer
+                value: "0"
+            - name: responseFormat
+              input:
+                type: integer
+                value: "2"
+            - name: modelName
+              input:
+                type: string
+                value: 豆包·1.6·极致速度·250828
+            - name: modelType
+              input:
+                type: integer
+                value: "1761035614"
+            - name: prompt
+              input:
+                type: string
+                value: |4+
+                    下面是本次抓取到的所有众筹项目数据，已经拍平成一个 JSON 数组 input（每个元素是一个项目对象）：
+
+                    {{input}}
+
+                    请你只基于这些数据，为“想做同类众筹的品牌方”输出一个结构化分析结果。
+
+                    【输出格式】
+
+                    最终回答必须是一个 JSON 对象，包含以下四个键：
+
+                    {
+                      "market_leaderboard": [...],
+                      "platform_summary": [...],
+                      "project_snapshots": [...],
+                      "selling_point_cards": [...]
+                    }
+
+                    下面详细说明每一部分需要的字段含义（注意：这些说明只用于理解，不能原样出现在最终 JSON 的值里）。
+
+                    --------------------------------
+                    1）market_leaderboard：市场大盘榜单
+                    --------------------------------
+
+                    - 用来回答：“最近 1–3 年这个赛道的头部竞品是谁、融了多少钱、多少人支持？”
+                    - 请从 input 中选出至少 10 个最有代表性的项目，按“更值得关注 → 次一级”排序。
+                      - 排序时综合考虑：筹资金额（根据 raised_text 判定大小）、funding_percentage、backers。
+
+                    数组元素的字段：
+
+                    - title：该项目的 title，必须直接从 input 中复制。
+                    - platform：该项目的 platform。
+                    - category：该项目的 category，如果没有则填 null。
+                    - raised_amount_text：该项目的 raised_text，原样复制（不要改写格式）。
+                    - funding_percentage：该项目的 funding_percentage。
+                    - backers：该项目的 backers。
+                    - reason：用中文一句话说明为什么这个项目值得上榜，例如“筹资金额最高”“达成率极高且支持者多”等。
+
+                    --------------------------------
+                    2）platform_summary：平台选择参考
+                    --------------------------------
+
+                    - 用来回答：“Kickstarter vs Indiegogo vs BackerKit，去哪家更合适？”
+
+                    请对 input 中出现的每一个平台输出一条汇总记录。
+
+                    数组元素的字段：
+
+                    - platform：平台名称（例如 "Kickstarter"、"Indiegogo"、"BackerKit Crowdfunding"）。
+                    - project_count：该平台在 input 中的项目数量。
+                    - avg_funding_percentage：该平台所有项目 funding_percentage 的平均值（四舍五入到整数）。
+                    - avg_backers：该平台所有项目 backers 的平均值（四舍五入到整数；如果缺失较多可以用非缺失项目计算）。
+                    - top_categories：该平台最常见的 2–3 个 category，按出现频率排序；如果所有项目都没有 category，使用 []（空数组），不要用 [null]。
+                    - comment：用中文一句话总结这个平台的特点，例如“科技硬件项目集中，达成率整体较高，更适合偏科技的品牌”等。
+
+                    --------------------------------
+                    3）project_snapshots：单个项目快照
+                    --------------------------------
+
+                    - 用来回答：“具体一个项目是怎么玩的？现在在什么阶段？”
+
+                    请从 input 中选出 5–8 个具有代表性的项目，尽量覆盖不同平台、不同类目、不同筹款表现（有超额很多的、刚达成的、表现偏弱的）。
+
+                    数组元素的字段：
+
+                    - title：来自该项目的 title。
+                    - platform：该项目的 platform。
+                    - category：该项目的 category（缺失则为 null）。
+                    - raised_amount_text：该项目的 raised_text。
+                    - funding_percentage：该项目的 funding_percentage。
+                    - backers：该项目的 backers。
+                    - days_to_go：该项目的 days_to_go（缺失则为 null）。
+                    - estimated_goal_text：
+                      - 如果 funding_percentage > 0，则可以用「已筹金额 / (funding_percentage / 100)」粗略估算目标金额，并四舍五入到一个常见金额（例如 "$428,085" / 42.81% ≈ "$1,000,000"），再转成类似 "$1,000,000" 的字符串；
+                      - 如果无法可靠估算，就填 null。
+                    - stage_tag：根据 funding_percentage 和 days_to_go 给出一个 2–4 字的阶段标签，例如：
+                      - 强势早期 / 超额完成 / 临近失败 / 稳定推进 等。
+                    - trend_comment：用 1–2 句中文总结这个项目当前的筹款状态和趋势，例如“上线不久已远超目标，说明题材和卖点都非常对路”。
+
+                    --------------------------------
+                    4）selling_point_cards：产品卖点卡片
+                    --------------------------------
+
+                    - 用来回答：“别人页面上主要怎么讲卖点，可以给我什么启发？”
+
+                    请从 input 中选出 8–12 个卖点清晰的项目（可以和 project_snapshots 部分重叠），为每个项目生成一张“卖点卡片”。
+
+                    数组元素的字段：
+
+                    - title：该项目的 title。
+                    - platform：该项目的 platform。
+                    - category：该项目的 category（缺失则为 null）。
+                    - main_slogan_zh：
+                      - 基于该项目的 title 和 blurb，总结一条 15 字左右的中文主标题，像广告标题一样，点出最核心卖点。
+                    - sub_slogan_zh：
+                      - 基于 title 和 blurb，用中文写一条 25–40 字的副标题，说明：
+                        - 这个项目解决了什么问题 / 创造了什么体验；
+                        - 大概面向什么人群或使用场景。
+                    - angle_tags：
+                      - 一个中文字符串数组，包含 2–4 个简短标签，例如：
+                      - ["效率工具", "极客硬件"]、["桌游聚会", "家庭娱乐"]、["情绪价值", "IP 联名"] 等。
+
+                    --------------------------------
+                    统一要求
+                    --------------------------------
+
+                    1. 所有 title / platform / category / raised_amount_text / funding_percentage / backers / days_to_go 字段，必须来自 input 中真实存在的项目字段，禁止虚构项目或使用示例名称。
+                    2. 如果某个字段在 input 中不存在，就填 null 或空数组 []，不要随意编造数值。
+                    3. 可以对金额、达成率做合理的粗略计算，但不要出现明显离谱的数量级。
+                    4. 文案相关字段（reason、comment、trend_comment、main_slogan_zh、sub_slogan_zh、angle_tags）可以由你生成，但必须符合该项目的真实信息，不要与数据矛盾。
+                    5. 最终回答只输出一个 JSON 对象，结构和字段名必须与上述说明一致，不要输出任何额外的自然语言解释或 Markdown。
+
+            - name: enableChatHistory
+              input:
+                type: boolean
+                value: false
+            - name: chatHistoryRound
+              input:
+                type: integer
+                value: "3"
+            - name: systemPrompt
+              input:
+                type: string
+                value: |
+                    你是一名众筹项目数据分析助手，服务对象是想在海外做众筹的品牌方。
+
+                    【输入】
+                    - 变量 input 是一个 JSON 数组。
+                    - 每个元素是一个项目对象，可能包含：
+                      - title: 项目标题
+                      - blurb: 项目简介文案
+                      - platform: 平台名称（如 "Kickstarter"、"Indiegogo"、"BackerKit Crowdfunding"）
+                      - category: 项目类目（如 "Technology"、"Games"、"Comics" 等，可能缺失）
+                      - raised_text: 已筹金额原始字符串（如 "$1,285"、"€2,342"）
+                      - funding_percentage: 筹款达成率（整数百分比）
+                      - backers: 支持者人数
+                      - days_to_go: 剩余天数（可能为 0 或缺失）
+
+                    【总体目标】
+                    - 品牌方关心的是“能不能快速看懂竞品和市场”。
+                    - 你需要**只基于 input** 生成一个 JSON 分析结果，结构和字段名以用户提示词中的 schema 为准。
+                    - 分析结果应覆盖四块：
+                      1）市场大盘（market_leaderboard）：识别头部竞品，说明“谁筹得多 / 支持者多 / 达成率高”。
+                      2）平台选择参考（platform_summary）：比较 Kickstarter / Indiegogo / BackerKit 的项目数量、平均达成率、平均 backers 和主要类目，给平台选择建议。
+                      3）单个项目快照（project_snapshots）：选出若干具有代表性的项目，为每个项目给出金额、达成率、backers、阶段标签和筹款趋势点评。
+                      4）产品卖点卡片（selling_point_cards）：基于 title 和 blurb，总结项目的中文主标题、副标题和若干卖点标签，给品牌做文案和定位参考。
+
+                    【硬规则】
+                    1. 所有项目相关字段（title / platform / category / raised_text / funding_percentage / backers / days_to_go）必须来自 input 中真实存在的项目，禁止虚构项目，也不能使用 “Sample Project A/B” 等占位名称。
+                    2. 如果某个字段在原始数据中缺失，就填 null 或空数组 []，不要随意编造数值。
+                    3. 统计类信息（项目数量、平均达成率等）要尽量根据 input 计算或粗略估算，避免明显离谱。
+                    4. 文案类字段（reason、comment、trend_comment、main_slogan_zh、sub_slogan_zh 等）可以自己生成，但要和数据含义一致，不得自相矛盾。
+                    5. 最终回答**只能输出 JSON 对象**，结构和字段名必须和用户提示词给出的 schema 完全一致，不要输出自然语言说明、Markdown 或注释。
+            - name: stableSystemPrompt
+              input:
+                type: string
+                value: ""
+            - name: canContinue
+              input:
+                type: boolean
+                value: false
+            - name: loopPromptVersion
+              input:
+                type: string
+                value: ""
+            - name: loopPromptName
+              input:
+                type: string
+                value: ""
+            - name: loopPromptId
+              input:
+                type: string
+                value: ""
+        node_inputs:
+            - name: input
+              input:
+                value:
+                    path: projects_flat
+                    ref_node: "187604"
+        node_outputs:
+            output:
+                type: string
+                value: null
+            reasoning_content:
+                type: string
+                value: null
+        settingOnError:
+            processType: 1
+            retryTimes: 0
+            timeoutMs: 180000
+edges:
+    - source_node: "100001"
+      target_node: "150070"
+    - source_node: "196180"
+      target_node: "900001"
+    - source_node: "150070"
+      target_node: "140379"
+    - source_node: "140379"
+      target_node: "187604"
+      source_port: loop-output
+    - source_node: "187604"
+      target_node: "196180"
